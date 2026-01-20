@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Shillong Teer Sheet System</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: #f2f2f2;
+  padding: 10px;
+}
+.container {
+  max-width: 1100px;
+  margin: auto;
+  background: #ffffff;
+  padding: 15px;
+  border-radius: 8px;
+}
+h2 {
+  text-align: center;
+}
+input, button {
+  padding: 8px;
+  margin: 5px;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+th, td {
+  border: 1px solid #ccc;
+  padding: 6px;
+  text-align: center;
+}
+th {
+  background: #222;
+  color: #fff;
+}
+.flag {
+  background: #ffe0e0;
+}
+.total {
+  font-size: 18px;
+  font-weight: bold;
+  margin-top: 10px;
+}
+.note {
+  font-size: 13px;
+  color: #555;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <h2>Shillong Teer – Verified Sheet Calculator</h2>
+
+  <p class="note">
+    ✔ All calculations are 100% accurate<br>
+    ✔ Repeated numbers auto-added<br>
+    ✔ Export supported<br>
+    ❗ OCR / handwriting reading requires backend AI (not browser)
+  </p>
+
+  <h3>Upload Sheet Images (Reference Only)</h3>
+  <input type="file" multiple accept="image/*">
+  <p class="note">Images are for visual reference. Values must be verified before entry.</p>
+
+  <h3>Add Verified Entry</h3>
+  <input type="number" id="num" placeholder="Number (00-99)" min="0" max="99">
+  <input type="number" id="amt" placeholder="Amount ₹">
+  <button onclick="addEntry()">Add</button>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Number</th>
+        <th>Total Amount (₹)</th>
+      </tr>
+    </thead>
+    <tbody id="chart"></tbody>
+  </table>
+
+  <div class="total" id="grandTotal">TO: ₹0</div>
+
+  <button onclick="exportCSV()">Export Excel (CSV)</button>
+</div>
+
+<script>
+let data = {};
+
+function addEntry() {
+  let num = document.getElementById("num").value;
+  let amt = document.getElementById("amt").value;
+
+  if (num === "" || amt === "") {
+    alert("Please enter both number and amount");
+    return;
+  }
+
+  num = parseInt(num, 10);
+  amt = parseFloat(amt);
+
+  if (num < 0 || num > 99 || amt <= 0) {
+    alert("Invalid number or amount");
+    return;
+  }
+
+  let key = num.toString().padStart(2, "0");
+
+  if (!data[key]) data[key] = 0;
+  data[key] += amt;
+
+  document.getElementById("num").value = "";
+  document.getElementById("amt").value = "";
+
+  render();
+}
+
+function render() {
+  const chart = document.getElementById("chart");
+  chart.innerHTML = "";
+  let total = 0;
+
+  Object.keys(data).sort((a, b) => a - b).forEach(n => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td>${n}</td><td>₹${data[n].toFixed(2)}</td>`;
+    chart.appendChild(tr);
+    total += data[n];
+  });
+
+  document.getElementById("grandTotal").innerText =
+    "TO: ₹" + total.toFixed(2);
+}
+
+function exportCSV() {
+  let csv = "Number,Amount\n";
+  let total = 0;
+
+  Object.keys(data).forEach(n => {
+    csv += `${n},${data[n]}\n`;
+    total += data[n];
+  });
+
+  csv += `\nTO,${total}`;
+
+  const blob = new Blob([csv], { type: "text/csv" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = "teer_final_result.csv";
+  link.click();
+}
+</script>
+
+</body>
+</html>
